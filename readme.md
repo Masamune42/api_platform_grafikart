@@ -183,3 +183,111 @@ On récupère le champ @id pour l'utilsier dans une méthode PUT pour l'article 
   "category": "/api/categories/1"
 }
 ```
+
+## La sérialisation
+- Quand on envoie des donneés, elles vont être transformées sous forme de tableau PHP
+- Ce tableau sera ensuite encodé en JSON, XML ou autre...
+- Par défaut, API Platform va prendre tous les champs de l'entité et va les convertir en tableau
+- On peut piloter quels champs peuvent être convertis à travers des groupes de normalisation
+
+```php
+// Post.php
+#[ORM\Entity(repositoryClass: PostRepository::class)]
+// normalizationContext : Permet de choisir les groupes pour normaliser (GET)
+// denormalizationContext : Permet de choisir les groupes pour dénormaliser (PUT, POST)
+// itemOperations : Permet de choisir les méthodes spécifiques réalisables avec ce qui est modifiable par groupe
+// Pour la méthode GET : On normalise les groupes read:collection, read:item et read:Post (ajotués dans Category)
+// Pour la méthode PUT : denormalization_context => seulement les groupes appelés put:Post (ici le titre du Post)
+#[ApiResource(
+    normalizationContext: ['groups' => ['read:collection']],
+    denormalizationContext: ['groups' => ['write:Post']],
+    itemOperations: [
+        // 'put' => [
+        //     'denormalization_context' => ['groups' => ['write:Post']]
+        // ],
+        'put',
+        'delete',
+        'get' => [
+            'normalization_context' => ['groups' => ['read:collection', 'read:item', 'read:Post']]
+        ]
+    ]
+)]
+class Post
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    #[Groups(['read:collection'])]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['read:collection', 'write:Post'])]
+    private ?string $title = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['read:collection', 'write:Post'])]
+    private ?string $slug = null;
+
+    #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['read:item', 'write:Post'])]
+    private ?string $content = null;
+
+    #[ORM\Column]
+    #[Groups(['read:item'])]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\ManyToOne(inversedBy: 'posts')]
+    #[Groups(['read:item', 'write:Post'])]
+    private ?Category $category = null;
+
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
+    }
+}
+
+// Category.php
+// On ajoute les champs id et name au groupe Post que l'on récupère dans Post.php
+#[ORM\Entity(repositoryClass: CategoryRepository::class)]
+#[ApiResource()]
+class Category
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    #[Groups('read:Post')]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups('read:Post')]
+    private ?string $name = null;
+}
+```
+On récupère bien les valeurs sélectionnés dans l'entité Category
+```json
+{
+  "@context": "/api/contexts/Post",
+  "@id": "/api/posts/1",
+  "@type": "Post",
+  "id": 1,
+  "title": "Mon premier article",
+  "slug": "mon-premier-article",
+  "content": "Bonjour les gens",
+  "createdAt": "2022-10-31T13:57:47+00:00",
+  "category": {
+    "@id": "/api/categories/1",
+    "@type": "Category",
+    "id": 1,
+    "name": "Catégorie #1"
+  }
+}
+```
+
+Ecriture des noms de groupes
+- read:Post:item
+- Partie lecture:type de l'entité:pour la collection ou l'item
