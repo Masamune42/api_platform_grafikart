@@ -1,4 +1,8 @@
 # API Platform Grafikart
+## Versions utilisées
+- PHP 8.0.13
+- MariaDB 10.4.10
+- Symfony 5.4
 
 ## Premiers pas
 ```
