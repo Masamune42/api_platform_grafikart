@@ -7,11 +7,18 @@ use App\Repository\PostRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints\Length;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ApiResource(
     normalizationContext: ['groups' => ['read:collection']],
     denormalizationContext: ['groups' => ['write:Post']],
+    collectionOperations: [
+        'get',
+        'post' => [
+            'validation_groups' => [Post::class, 'validationGroups']
+        ]
+    ],
     itemOperations: [
         // 'put' => [
         //     'denormalization_context' => ['groups' => ['write:Post']]
@@ -32,7 +39,10 @@ class Post
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['read:collection', 'write:Post'])]
+    #[
+        Groups(['read:collection', 'write:Post']),
+        Length(min: 5, groups: ['create:Post'])
+    ]
     private ?string $title = null;
 
     #[ORM\Column(length: 255)]
@@ -50,10 +60,14 @@ class Post
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'posts')]
+    #[ORM\ManyToOne(inversedBy: 'posts', cascade: ['persist'])]
     #[Groups(['read:item', 'write:Post'])]
     private ?Category $category = null;
 
+    // public static function validationGroups(self $post)
+    // {
+    //     return ['create:Post'];
+    // }
 
     public function __construct()
     {
