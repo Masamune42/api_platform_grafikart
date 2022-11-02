@@ -8,6 +8,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\Valid;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[ApiResource(
@@ -15,9 +16,10 @@ use Symfony\Component\Validator\Constraints\Length;
     denormalizationContext: ['groups' => ['write:Post']],
     collectionOperations: [
         'get',
-        'post' => [
-            'validation_groups' => [Post::class, 'validationGroups']
-        ]
+        'post'
+        // 'post' => [
+        //     'validation_groups' => [Post::class, 'validationGroups']
+        // ]
     ],
     itemOperations: [
         // 'put' => [
@@ -61,7 +63,10 @@ class Post
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'posts', cascade: ['persist'])]
-    #[Groups(['read:item', 'write:Post'])]
+    #[
+        Groups(['read:item', 'write:Post']),
+        Valid()
+    ]
     private ?Category $category = null;
 
     // public static function validationGroups(self $post)
