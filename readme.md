@@ -295,3 +295,91 @@ On récupère bien les valeurs sélectionnés dans l'entité Category
 Ecriture des noms de groupes
 - read:Post:item
 - Partie lecture:type de l'entité:pour la collection ou l'item
+
+## La validation
+Pour controller ce qui rentre dans notre structure via des règles.
+
+### Longueur du champ
+```php
+#[ORM\Column(length: 255)]
+#[
+    Groups(['read:Post', 'write:Post']),
+    Length(min: 3)
+]
+// Taille min: 3
+private ?string $name = null;
+```
+
+### Groupe de validation
+On va mettre en place la validation uniquement sur la méthode POST
+```php
+// Option 1
+// Dans ApiResource :
+collectionOperations: [
+      'get',
+      'post' => [
+          'validation_groups' => ['create:Post']
+      ]
+  ]
+
+// Uniquement les groupes create:Post
+#[ORM\Column(length: 255)]
+#[
+    Groups(['read:collection', 'write:Post']),
+    Length(min: 5, groups: ['create:Post'])
+]
+private ?string $title = null;
+```
+On peut aussi utiliser une fonction static
+```php
+// Option 2 
+// Dans ApiResource :
+collectionOperations: [
+      'get',
+      'post' => [
+        'validation_groups' => [Post::class, 'validationGroups']
+      ]
+  ]
+
+// Fonction qui retourne les groupes de validations à utiliser
+public static function validationGroups(self $post)
+{
+    return ['create:Post'];
+}
+```
+
+### Création de la catégorie en même temps que l'article
+Via la commande suivante de création de Post
+```json
+{
+  "title": "Article avec catégorie",
+  "slug": "article_avec_categorie",
+  "category": {
+    "name": "Catégorie de l'article"
+  }
+}
+```
+```php
+// Dans ApiResource
+collectionOperations: [
+    'get',
+    'post'
+],
+
+// On ajoute le grupe write:Post pour préciser qu'il appartient au groupe denormalizationContext déclaré dans APiResource
+#[ORM\Column(length: 255)]
+#[
+    Groups(['read:Post', 'write:Post']),
+    Length(min: 3)
+]
+private ?string $name = null;
+
+// On autorise la création en cascade de la catégorie
+// On ajoute Valid() pour vérifier que la règle de création en cascade est valide (min: 3)
+#[ORM\ManyToOne(inversedBy: 'posts', cascade: ['persist'])]
+#[
+    Groups(['read:item', 'write:Post']),
+    Valid()
+]
+private ?Category $category = null;
+```
