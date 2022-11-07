@@ -11,6 +11,8 @@ cd .\tuto-api\
 composer req api
 > Si la dernière ne marche pas faire la commande + vérifier la version de PHP utilisée
 composer self-update
+> Pour le chapitre de Pagination et Filtrage : permet d'avoir le Profiler Symfony pour debugger
+composer require --dev symfony/profiler-pack
 ```
 
 Configuration de la BDD dans le fichier .env
@@ -382,4 +384,60 @@ private ?string $name = null;
     Valid()
 ]
 private ?Category $category = null;
+```
+
+## Pagination et Filtres
+### Pagination
+```php
+#[ApiResource(
+  // On demande 2 items par page par défaut
+  paginationItemsPerPage: 2,
+  // Nombre d'items maximum par page
+  paginationMaximumItemsPerPage:2,
+  // Activation de l'option paginationMaximumItemsPerPage
+  paginationClientItemsPerPage: true,
+)],
+
+```
+Résultat
+```json
+{
+  "@context": "/api/contexts/Post",
+  "@id": "/api/posts",
+  "@type": "hydra:Collection",
+  "hydra:member": [
+    {
+      "@id": "/api/posts/1",
+      "@type": "Post",
+      "id": 1,
+      "title": "Mon premier article",
+      "slug": "mon-premier-article"
+    },
+    {
+      "@id": "/api/posts/2",
+      "@type": "Post",
+      "id": 2,
+      "title": "Mon second article",
+      "slug": "mon-second-article"
+    }
+  ],
+  "hydra:totalItems": 3,
+  "hydra:view": {
+    "@id": "/api/posts?page=1",
+    "@type": "hydra:PartialCollectionView",
+    "hydra:first": "/api/posts?page=1",
+    "hydra:last": "/api/posts?page=2",
+    "hydra:next": "/api/posts?page=2"
+  },
+}
+```
+Les attributs hydra (via le retour de type ld+json) permettent d'obtenir des informations sur l'opération en cours comme :
+- hydra:totalItems : nombre total d'items
+- hydra:first, last, next : première page, dernière page et page suivante
+
+### Filtres
+```php
+// Ajouter après le ApiResource avec une virgule
+// On ajoute un filtre qui concerne la propriété id => numéro exact et le titre => recherche partiel
+ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'title' => 'partial'])
 ```

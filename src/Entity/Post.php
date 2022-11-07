@@ -13,31 +13,33 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\Valid;
 
 #[ORM\Entity(repositoryClass: PostRepository::class)]
-#[ApiResource(
-    normalizationContext: ['groups' => ['read:collection']],
-    denormalizationContext: ['groups' => ['write:Post']],
-    paginationItemsPerPage: 2,
-    paginationMaximumItemsPerPage:2,
-    paginationClientItemsPerPage: true,
-    collectionOperations: [
-        'get',
-        'post'
-        // 'post' => [
-        //     'validation_groups' => [Post::class, 'validationGroups']
-        // ]
-    ],
-    itemOperations: [
-        // 'put' => [
-        //     'denormalization_context' => ['groups' => ['write:Post']]
-        // ],
-        'put',
-        'delete',
-        'get' => [
-            'normalization_context' => ['groups' => ['read:collection', 'read:item', 'read:Post']]
+#[
+    ApiResource(
+        normalizationContext: ['groups' => ['read:collection']],
+        denormalizationContext: ['groups' => ['write:Post']],
+        paginationItemsPerPage: 2,
+        paginationMaximumItemsPerPage: 2,
+        paginationClientItemsPerPage: true,
+        collectionOperations: [
+            'get',
+            'post'
+            // 'post' => [
+            //     'validation_groups' => [Post::class, 'validationGroups']
+            // ]
+        ],
+        itemOperations: [
+            // 'put' => [
+            //     'denormalization_context' => ['groups' => ['write:Post']]
+            // ],
+            'put',
+            'delete',
+            'get' => [
+                'normalization_context' => ['groups' => ['read:collection', 'read:item', 'read:Post']]
+            ]
         ]
-    ]
-        ),
-        ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'title' => 'partial'])]
+    ),
+    ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'title' => 'partial'])
+]
 class Post
 {
     #[ORM\Id]
