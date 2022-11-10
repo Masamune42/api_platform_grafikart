@@ -558,5 +558,7 @@ collectionOperations: [
 ],
 ```
 Ne pas oublier d'ajouter dans services.yaml
+```yaml
 App\Controller\PostCountController:
     tags: [ controller.service_arguments ]
+```
