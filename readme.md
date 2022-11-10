@@ -441,3 +441,122 @@ Les attributs hydra (via le retour de type ld+json) permettent d'obtenir des inf
 // On ajoute un filtre qui concerne la propriété id => numéro exact et le titre => recherche partiel
 ApiFilter(SearchFilter::class, properties: ['id' => 'exact', 'title' => 'partial'])
 ```
+
+### Opération personnalisée
+On crée une nouvelle entité pour Post
+- online : boolean : no
+
+```php
+// Par défaut la valeur est 0 / false
+#[ORM\Column(options: [
+  "default" => "0"
+])]
+// On utilise un groupe de normalizationContext
+#[Groups(['read:collection'])]
+private ?bool $online = false;
+```
+On migre les changements en BDD
+
+```php
+itemOperations: [
+    'put',
+    'delete',
+    'get' => [
+        'normalization_context' => [
+            'groups' => ['read:collection', 'read:item', 'read:Post'],
+            // On peut ajouter un nom à la définition à la place de ce qui est fait
+            'openapi_definition_name' => 'Detail',
+            ]
+    ],
+    // On ajoute une opération publish qui traite d'un item en particulier
+    'publish' => [
+        'method' => 'POST',
+        'path' => '/posts/{id}/publish',
+        // PostPublishController.php à créer (voir fichier) 
+        'controller' => PostPublishController::class,
+        // Si on met write à false, on désactive l'écriture automatique en BDD (pour le faire il faudra faire un flush dans le controller)
+        'write' => 'false',
+        // On modifie les spécifications Open API pour décrire la requête attendue
+        'openapi_context' => [
+            // Description
+            'summary' => 'Permet de publier un article',
+            'requestBody' => [
+                'content' => [
+                    'application/json' => [
+                        'schema' => []
+                    ]
+                ]
+            ]
+        ]
+    ]
+]
+```
+
+On peut faire la même chose pour un champ
+```php
+#[ORM\Column(options: [
+    "default" => "0"
+])]
+#[
+    Groups(['read:collection']),
+    ApiProperty(openapiContext: ['type' => 'boolean', 'description' => 'En ligne ou pas ?'])
+]
+private ?bool $online = false;
+```
+
+Création d'un GET pour obtenir le nombre total d'articles
+```php
+collectionOperations: [
+  'get',
+  'post',
+  // Nouvelle opération
+  'count' => [
+      'method' => 'GET',
+      'path' => '/posts/count',
+      'controller' => PostCountController::class,
+      'read' => false,
+      // On désactive la pagination
+      'pagination_enabled' => false,
+      // On désactive les filtres
+      'filters' => [],
+      'openapi_context' => [
+          'summary' => 'Retourne le nombre total d\'article',
+          // Paramètres
+          'parameters' => [
+              [
+                  // Se situe dans les query parameters
+                  'in' => 'query',
+                  // Nom
+                  'name' => 'online',
+                  // Schéma de la donnée attendue
+                  'schema' => [
+                      'type' => 'integer',
+                      'maximum' => 1,
+                      'minimum' => 0,
+                  ],
+                  'description' => 'Filtre les articles en ligne'
+              ]
+          ],
+          // On liste les différentes réponses
+          'responses' => [
+              '200' => [
+                  'description' => 'OK',
+                  'content' => [
+                      'application/json' => [
+                          'schema' => [
+                              // On retourne un type entier
+                              'type' => 'integer',
+                              // Exemple du type de retour
+                              'example' => 3
+                          ]
+                      ]
+                  ]
+              ]
+          ]
+      ]
+  ]
+],
+```
+Ne pas oublier d'ajouter dans services.yaml
+App\Controller\PostCountController:
+    tags: [ controller.service_arguments ]

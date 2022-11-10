@@ -3,8 +3,11 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use App\Controller\PostCountController;
+use App\Controller\PostPublishController;
 use App\Repository\PostRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -15,14 +18,53 @@ use Symfony\Component\Validator\Constraints\Valid;
 #[ORM\Entity(repositoryClass: PostRepository::class)]
 #[
     ApiResource(
-        normalizationContext: ['groups' => ['read:collection']],
+        normalizationContext: [
+            'groups' => ['read:collection'],
+            'openapi_definition_name' => 'Collection',
+        ],
         denormalizationContext: ['groups' => ['write:Post']],
         paginationItemsPerPage: 2,
         paginationMaximumItemsPerPage: 2,
         paginationClientItemsPerPage: true,
         collectionOperations: [
             'get',
-            'post'
+            'post',
+            'count' => [
+                'method' => 'GET',
+                'path' => '/posts/count',
+                'controller' => PostCountController::class,
+                'read' => false,
+                'pagination_enabled' => false,
+                'filters' => [],
+                'openapi_context' => [
+                    'summary' => 'Retourne le nombre total d\'article',
+                    'parameters' => [
+                        [
+                            'in' => 'query',
+                            'name' => 'online',
+                            'schema' => [
+                                'type' => 'integer',
+                                'maximum' => 1,
+                                'minimum' => 0,
+                            ],
+                            'description' => 'Filtre les articles en ligne'
+                        ]
+                    ],
+                    'responses' => [
+                        '200' => [
+                            'description' => 'OK',
+                            'content' => [
+                                'application/json' => [
+                                    'schema' => [
+                                        'type' => 'integer',
+                                        'example' => 3
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
             // 'post' => [
             //     'validation_groups' => [Post::class, 'validationGroups']
             // ]
@@ -34,7 +76,25 @@ use Symfony\Component\Validator\Constraints\Valid;
             'put',
             'delete',
             'get' => [
-                'normalization_context' => ['groups' => ['read:collection', 'read:item', 'read:Post']]
+                'normalization_context' => [
+                    'groups' => ['read:collection', 'read:item', 'read:Post'],
+                    'openapi_definition_name' => 'Detail',
+                    ]
+            ],
+            'publish' => [
+                'method' => 'POST',
+                'path' => '/posts/{id}/publish',
+                'controller' => PostPublishController::class,
+                'openapi_context' => [
+                    'summary' => 'Permet de publier un article',
+                    'requestBody' => [
+                        'content' => [
+                            'application/json' => [
+                                'schema' => []
+                            ]
+                        ]
+                    ]
+                ]
             ]
         ]
     ),
@@ -76,6 +136,15 @@ class Post
         Valid()
     ]
     private ?Category $category = null;
+
+    #[ORM\Column(options: [
+        "default" => "0"
+    ])]
+    #[
+        Groups(['read:collection']),
+        ApiProperty(openapiContext: ['type' => 'boolean', 'description' => 'En ligne ou pas ?'])
+    ]
+    private ?bool $online = false;
 
     // public static function validationGroups(self $post)
     // {
@@ -161,6 +230,18 @@ class Post
     public function setCategory(?Category $category): self
     {
         $this->category = $category;
+
+        return $this;
+    }
+
+    public function isOnline(): ?bool
+    {
+        return $this->online;
+    }
+
+    public function setOnline(bool $online): self
+    {
+        $this->online = $online;
 
         return $this;
     }
