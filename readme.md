@@ -562,3 +562,38 @@ Ne pas oublier d'ajouter dans services.yaml
 App\Controller\PostCountController:
     tags: [ controller.service_arguments ]
 ```
+
+## Améliorer la documentation OpenAPI
+Dans l'entité Category
+```php
+#[ApiResource(
+    collectionOperations: ['get', 'post'],
+    // On défini les opérations disponibles
+    itemOperations: [
+        'put',
+        'patch',
+        'delete',
+        // On branche l'opération GET à un controller (déjà existant sur API Platform) pour le désactiver
+        'get' => [
+            'controller' => NotFoundAction::class,
+            // On ajoute le paramètre summary au GET de l'objet OpenApi (pour le récupérer dans OpenApiFactory.php à créer)
+            'openapi_context' => [
+                'summary' => 'hidden'
+            ],
+            // Comme la méthode est désactivée, on ne doit pas faire de requête sur l'ORM
+            'read' => false,
+            // On désactive l'affichage du résultat
+            'output' => false
+        ]
+    ]
+)]
+```
+
+On crée src\OpenApi\OpenApiFactory.php
+```yaml
+# Dans le services.yaml
+    App\OpenApi\OpenApiFactory:
+        decorates: 'api_platform.openapi.factory'
+        arguments: ['@App\OpenApi\OpenApiFactory.inner']
+        autoconfigure: false
+```
