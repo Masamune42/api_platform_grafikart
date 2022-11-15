@@ -6,8 +6,10 @@ use ApiPlatform\Core\Annotation\ApiProperty;
 use ApiPlatform\Core\Annotation\ApiResource;
 
 #[ApiResource(
+    // On ne récupère que les méthodes GET pour les items et collections
     itemOperations: ['get'],
     collectionOperations: ['get'],
+    // On désactive la pagination
     paginationEnabled: false
 )]
 class Dependency 

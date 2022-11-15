@@ -29,5 +29,6 @@ services:
         arguments: ['@App\OpenApi\OpenApiFactory.inner']
         autoconfigure: false
 
+    # On envoie des arguments dans DependencyDataProvider.php > chemin du projet
     App\DataProvider\DependencyDataProvider:
         arguments: ['%kernel.project_dir%']
