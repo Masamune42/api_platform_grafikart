@@ -10,11 +10,11 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 #[ApiResource(
-    // On ne récupère que les méthodes GET pour les items et collections
     itemOperations: ['get', 'post'],
     collectionOperations: [
         'get',
         'delete',
+        // la méthode PUT fait parti du groupe de dénormalisation put:Dependency
         'put' => [
             'denormalization_context' => [
                 'groups' => ['put:Dependency']
@@ -53,6 +53,7 @@ class Dependency
         string $name,
         string $version
     ) {
+        // On crée automatiquement l'uuid
         $this->uuid = Uuid::uuid5(Uuid::NAMESPACE_URL, $name)->toString();
         $this->name = $name;
         $this->version = $version;

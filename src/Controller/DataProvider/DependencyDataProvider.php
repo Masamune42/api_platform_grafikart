@@ -28,6 +28,7 @@ class DependencyDataProvider implements ContextAwareCollectionDataProviderInterf
         return $this->repository->find($id);
     }
     
+    // Fonction qui permet de récupérer une collection d'items
     public function getCollection(string $resourceClass, ?string $operationName = null, array $context = [])
     {
         return $this->repository->findAll();

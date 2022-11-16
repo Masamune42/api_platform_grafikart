@@ -598,7 +598,7 @@ On crée src\OpenApi\OpenApiFactory.php
         autoconfigure: false
 ```
 
-## Créer un DataProvider
+## Créer un DataProvider (ATTENTION : les éléments php créés ont été changés lors du prochain chapitre)
 On va créer un endpoint qu'on appelera "Dependencies" qui va lister les dépendances qu'on a dans notre projet
 
 - On crée un objet Dependency.php dans Entity
@@ -614,3 +614,6 @@ On va créer un endpoint qu'on appelera "Dependencies" qui va lister les dépend
 composer require ramsey/uuid
 ```
 - On peut récupérer des éléments avec des recherches via les uuid
+
+## Créer un DataPersister
+On crée src\Controller\DataPersister\DependencyDataPersister.php, src\Repository\DependencyRepository.php et on modifie src\Controller\DataProvider\DependencyDataProvider.php.
