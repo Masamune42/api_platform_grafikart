@@ -10,8 +10,8 @@ use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
 #[ApiResource(
-    itemOperations: ['get', 'post'],
-    collectionOperations: [
+    collectionOperations: ['get', 'post'],
+    itemOperations: [
         'get',
         'delete',
         // la méthode PUT fait parti du groupe de dénormalisation put:Dependency

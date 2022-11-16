@@ -602,7 +602,7 @@ On crée src\OpenApi\OpenApiFactory.php
 On va créer un endpoint qu'on appelera "Dependencies" qui va lister les dépendances qu'on a dans notre projet
 
 - On crée un objet Dependency.php dans Entity
-- On crée src\Controller\DataProvider\DependencyDataProvider.php
+- On crée src\DataProvider\DependencyDataProvider.php
 - On ajoute dans services.yaml la configuration a envoyer dans le constructeur de DependencyDataProvider.php
 ```yaml
 # On envoie des arguments dans DependencyDataProvider.php > chemin du projet
@@ -616,4 +616,4 @@ composer require ramsey/uuid
 - On peut récupérer des éléments avec des recherches via les uuid
 
 ## Créer un DataPersister
-On crée src\Controller\DataPersister\DependencyDataPersister.php, src\Repository\DependencyRepository.php et on modifie src\Controller\DataProvider\DependencyDataProvider.php.
+On crée src\DataPersister\DependencyDataPersister.php, src\Repository\DependencyRepository.php et on modifie src\DataProvider\DependencyDataProvider.php.
