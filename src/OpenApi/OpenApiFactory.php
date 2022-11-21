@@ -60,6 +60,10 @@ class OpenApiFactory implements OpenApiFactoryInterface
         // EXEMPLE : Il faut être indentifié pour accéder à toutes les routes de l'API
         // $openApi = $openApi->withSecurity(['cookieAuth' => []]);
 
+        $meOperation = $openApi->getPaths()->getPath('/api/me')->getGet()->withParameters([]);
+        $mePathItem = $openApi->getPaths()->getPath('/api/me')->withGet($meOperation);
+        $openApi->getPaths()->addPath('/api/me', $mePathItem);
+
         // On ajoute notre chemin pour se connecter
         $pathItem = new PathItem(
             // Création d'une opération quand on post
@@ -98,6 +102,24 @@ class OpenApiFactory implements OpenApiFactoryInterface
 
         // On ajoute le nouveau chemin
         $openApi->getPaths()->addPath('/api/login', $pathItem);
+
+        // On ajoute notre chemin pour se connecter
+        $pathItem = new PathItem(
+            // Création d'une opération quand on post
+            post: new Operation(
+                // Nom de l'operationId (unique)
+                operationId: 'postApiLogout',
+                // Catégorie de tag où l'on affiche le chemin à utiliser
+                tags: ['Auth'],
+                // Réponse de type 200 quand l'utilisateur s'est bien connecté
+                responses: [
+                    '204' => []
+                ]
+            )
+        );
+
+        // On ajoute le nouveau chemin
+        $openApi->getPaths()->addPath('/api/logout', $pathItem);
         return $openApi;
     }
 }

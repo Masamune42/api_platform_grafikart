@@ -16,7 +16,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
     // On doit être connecté avec le role user pour pouvoir utiliser les requêtes
     security: 'is_granted("ROLE_USER")',
     // Route me pour récupérer les infos du user
-    collectionOperations: [
+    collectionOperations: [],
+    itemOperations: [
+        'get' => [
+            'controller' => NotFoundAction::class,
+            'openapi_context' => ['summary' => 'hidden'],
+            'read' => false,
+            'output' => false
+        ],
         'me' => [
             'pagination_enabled' => false,
             'path' => '/me',
@@ -28,14 +35,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
             'openapi_context' => [
                 'security' => ['cookieAuth' => []]
             ]
-        ]
-    ],
-    itemOperations: [
-        'get' => [
-            'controller' => NotFoundAction::class,
-            'openapi_context' => ['summary' => 'hidden'],
-            'read' => false,
-            'output' => false
         ]
     ],
     normalizationContext: ['groups' => ['read:User']]

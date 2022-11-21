@@ -651,7 +651,14 @@ On change User.php
     // On doit être connecté avec le role user pour pouvoir utiliser les requêtes
     security: 'is_granted("ROLE_USER")',
     // Route me pour récupérer les infos du user
-    collectionOperations: [
+    collectionOperations: [],
+    itemOperations: [
+        'get' => [
+            'controller' => NotFoundAction::class,
+            'openapi_context' => ['summary' => 'hidden'],
+            'read' => false,
+            'output' => false
+        ],
         'me' => [
             'pagination_enabled' => false,
             'path' => '/me',
@@ -663,14 +670,6 @@ On change User.php
             'openapi_context' => [
                 'security' => ['cookieAuth' => []]
             ]
-        ]
-    ],
-    itemOperations: [
-        'get' => [
-            'controller' => NotFoundAction::class,
-            'openapi_context' => ['summary' => 'hidden'],
-            'read' => false,
-            'output' => false
         ]
     ],
     normalizationContext: ['groups' => ['read:User']] // read:User assignés à id, email et role
