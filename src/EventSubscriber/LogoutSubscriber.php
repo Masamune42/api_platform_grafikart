@@ -11,7 +11,9 @@ class LogoutSubscriber implements EventSubscriberInterface
 {
     public function onLogoutEvent(LogoutEvent $event): void
     {
+        // Si on a 'application/json' dans le tableau des requêtes que l'on accepte
         if (in_array('application/json', $event->getRequest()->getAcceptableContentTypes())) {
+            // On précise qu'il n'y a pas de contenu à la déconnexion
             $event->setResponse(new JsonResponse(null, Response::HTTP_NO_CONTENT));
         }
     }

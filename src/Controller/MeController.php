@@ -7,6 +7,7 @@ use Symfony\Component\Security\Core\Security;
 
 class MeController extends AbstractController
 {
+    // ON injecte le composant securité
     public function __construct(private Security $security)
     {
     }

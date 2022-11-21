@@ -617,3 +617,69 @@ composer require ramsey/uuid
 
 ## Créer un DataPersister
 On crée src\DataPersister\DependencyDataPersister.php, src\Repository\DependencyRepository.php et on modifie src\DataProvider\DependencyDataProvider.php.
+
+
+## Authentification JSON
+On crée un utilisateur
+```
+php bin/console make:user
+```
+Dans security.yaml on ajoute
+```yaml
+# Dans main:
+json_login:
+    check_path: api_login
+logout:
+    path: api_logout
+```
+On crée le src\Controller\SecurityController.php, on migre les donneés et on crée un utilisateur avec mail + role (on met "[]") + mdp
+```
+> Création du mdp encodé
+php/bin console security:encode_password
+```
+On peut se connecter via Postman ou Insomnia
+```json
+// Méthode POST
+{
+	"username" : "john@doe.fr",
+	"password": "0000"
+}
+```
+On change User.php
+```php
+#[ApiResource(
+    // On doit être connecté avec le role user pour pouvoir utiliser les requêtes
+    security: 'is_granted("ROLE_USER")',
+    // Route me pour récupérer les infos du user
+    collectionOperations: [
+        'me' => [
+            'pagination_enabled' => false,
+            'path' => '/me',
+            'method' => 'get',
+            'controller' => MeController::class,
+            // Comme on récupère les informations à la main pour le user, on ne lie pas dans la BDD
+            'read' => false,
+            // On limite l'opération /me pour les user authentifiés
+            'openapi_context' => [
+                'security' => ['cookieAuth' => []]
+            ]
+        ]
+    ],
+    itemOperations: [
+        'get' => [
+            'controller' => NotFoundAction::class,
+            'openapi_context' => ['summary' => 'hidden'],
+            'read' => false,
+            'output' => false
+        ]
+    ],
+    normalizationContext: ['groups' => ['read:User']] // read:User assignés à id, email et role
+)]
+```
+On crée src\Controller\MeController.php et on peut se connecter via Postman après avoir récupéré le cookie de login
+
+On crée un subscriber
+```
+php bin/console make:subscriber Logout
+```
+On modifie src\EventSubscriber\LogoutSubscriber.php

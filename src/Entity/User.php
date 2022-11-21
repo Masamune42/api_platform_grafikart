@@ -13,14 +13,18 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource(
+    // On doit être connecté avec le role user pour pouvoir utiliser les requêtes
     security: 'is_granted("ROLE_USER")',
+    // Route me pour récupérer les infos du user
     collectionOperations: [
         'me' => [
             'pagination_enabled' => false,
             'path' => '/me',
             'method' => 'get',
             'controller' => MeController::class,
+            // Comme on récupère les informations à la main pour le user, on ne lie pas dans la BDD
             'read' => false,
+            // On limite l'opération /me pour les user authentifiés
             'openapi_context' => [
                 'security' => ['cookieAuth' => []]
             ]
