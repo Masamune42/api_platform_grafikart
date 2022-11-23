@@ -630,6 +630,7 @@ Dans security.yaml on ajoute
 json_login:
     check_path: api_login
 logout:
+    # A changer au prochain chapitre (form HTML)
     path: api_logout
 ```
 On crée le src\Controller\SecurityController.php, on migre les donneés et on crée un utilisateur avec mail + role (on met "[]") + mdp
@@ -682,3 +683,23 @@ On crée un subscriber
 php bin/console make:subscriber Logout
 ```
 On modifie src\EventSubscriber\LogoutSubscriber.php
+
+## Authentification Form HTML
+On crée le AppAuthenticator. On peut utiliser /api/me pour vérifier la session.
+```
+php bin/console make:auth
+```
+
+On réécrit la fonction start dans src\Security\AppAuthenticator.php
+```php
+public function start(Request $request, ?AuthenticationException $authException = null): Response
+{
+    // Si on essaie d'accéder sans autorisation renvoie une erreur 401 UNAUTHORIZED
+    if (in_array('application/json', $request->getAcceptableContentTypes())) {
+        return new JsonResponse(null, Response::HTTP_UNAUTHORIZED);
+    }
+
+    $url = $this->getLoginUrl($request);
+    return new RedirectResponse($url);
+}
+```

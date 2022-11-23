@@ -47,7 +47,7 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator
         if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
             return new RedirectResponse($targetPath);
         }
-
+        // On redirige vers la page d'accueil
         return new RedirectResponse('/');
     }
 
@@ -58,7 +58,7 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator
 
     public function start(Request $request, ?AuthenticationException $authException = null): Response
     {
-        // Si on a 'application/json' dans le tableau des requêtes que l'on accepte
+        // Si on essaie d'accéder sans autorisation (ex : Postman avec du json) renvoie une erreur 401 UNAUTHORIZED
         if (in_array('application/json', $request->getAcceptableContentTypes())) {
             return new JsonResponse(null, Response::HTTP_UNAUTHORIZED);
         }
